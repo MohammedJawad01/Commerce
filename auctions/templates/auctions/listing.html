@@ -1,0 +1,86 @@
+{% extends "auctions/layout.html" %} {% block body %}
+
+<div class="container">
+
+    {% if message%}
+        {% if update %}
+        <div class="alert alert-success" role="alert">
+            {{message}}
+        </div>
+        {% else %}
+        <div class="alert alert-danger" role="alert">
+            {{message}}
+        </div>
+        {% endif %}
+     {% endif %}
+</div>
+
+
+{% if not listing.isActive and user == listing.price.user  %}
+<div class="alert alert-success" role="alert">
+    congratulations the deal is yours
+</div>
+{% endif %}
+
+<div class="row mx-3">
+  {% if user.is_authenticated and listing.isActive%} 
+  {% if isOwner %}
+  <form action="{% url 'closeAuction' id=listing.id %}" method="POST" class="mx-3">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-dark">Close</button>
+  </form>
+  {% endif %}
+  {% if listingInWatchlist %}
+  <form action="{% url 'removeWatchlist' id=listing.id %}" method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-dark">Remove From watchlist</button>
+  </form>
+  {% else %}
+  <form action="{% url 'addWatchlist' id=listing.id %}" method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-dark">Add to watchlist</button>
+  </form>
+  {% endif %} {% endif %}
+</div>
+
+<h2>Item Title : {{listing.title}}</h2>
+<img src="{{listing.imageUrl}}" alt="{{listing.title}}" height="300px" />
+<p>{{listing.description}}</p>
+<h6>Owner : {{listing.owner}}</h6>
+<h4>Initial price : {{listing.price.bid}} <span>$</span></h4>
+
+{% if user.is_authenticated %}
+<form action="{% url 'addBid' id=listing.id %}" method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="">Add Bid</label>
+      <input type="number" min="0" name="newBid" placeholder="Bid" />
+      <button type="submit">Bid</button>
+    </div>
+  </form>
+{% endif %}
+
+
+<br />
+<h2>Comments</h2>
+{% if user.is_authenticated %}
+<form action="{% url 'addComment' id=listing.id %}" method="POST">
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="">Add Comment</label>
+    <input type="text" name="newComment" placeholder="Comment" />
+    <button type="submit">Comment</button>
+  </div>
+</form>
+{% endif %}
+
+<ul class="list-group">
+  {% for comment in Comments %}
+  <li class="list-group-item">
+    <strong>{{comment.author}} </strong> <span>Says -> </span>
+    <span style="color: red; padding-left: 10px;">{{comment.message}}</span>
+  </li>
+  {% endfor %}
+</ul>
+
+{% endblock %}
